@@ -2,24 +2,24 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "中大新歓ナビ | 2026年度 新歓イベントまとめ",
+  title: "白門ナビ | 中央大学 新歓イベントまとめ 2026",
   description: "中央大学の新歓イベント・サークル情報を一覧でチェック。カレンダーで予定を確認、気になるサークルをキープしよう。",
   openGraph: {
-    title: "中大新歓ナビ",
+    title: "白門ナビ",
     description: "中央大学の新歓イベント・サークル情報をまとめてチェック",
     type: "website",
     locale: "ja_JP",
-    siteName: "中大新歓ナビ",
+    siteName: "白門ナビ",
   },
   twitter: {
     card: "summary",
-    title: "中大新歓ナビ",
+    title: "白門ナビ",
     description: "中央大学の新歓イベント・サークル情報をまとめてチェック",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "中大新歓ナビ",
+    title: "白門ナビ",
   },
 };
 

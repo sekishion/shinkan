@@ -140,7 +140,7 @@ export function CircleDetail({
               const text = `${circle.name}の新歓イベントをチェック！`;
               const url = typeof window !== "undefined" ? window.location.href : "";
               if (navigator.share) {
-                navigator.share({ title: "中大新歓ナビ", text, url });
+                navigator.share({ title: "白門ナビ", text, url });
               } else {
                 // フォールバック: LINEで共有
                 window.open(`https://line.me/R/share?text=${encodeURIComponent(text + "\n" + url)}`);
