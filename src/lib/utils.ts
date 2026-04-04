@@ -12,6 +12,19 @@ export function getWeekDates(baseDate: Date): Date[] {
   });
 }
 
+/** 月カレンダー用: 6週分（42日）の日付配列を返す。月曜始まり。 */
+export function getMonthGrid(year: number, month: number): Date[] {
+  const firstDay = new Date(year, month, 1);
+  const startDay = firstDay.getDay();
+  const mondayOffset = startDay === 0 ? -6 : 1 - startDay;
+  const gridStart = new Date(year, month, 1 + mondayOffset);
+  return Array.from({ length: 42 }, (_, i) => {
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate() + i);
+    return d;
+  });
+}
+
 export function toISO(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }

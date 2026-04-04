@@ -1,0 +1,21 @@
+{
+  "name": "白門ナビ — 中央大学 新歓イベントまとめ 2026",
+  "short_name": "白門ナビ",
+  "description": "中央大学の新歓イベント・サークル情報を一覧でチェック",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d4546a",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
