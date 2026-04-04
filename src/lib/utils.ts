@@ -37,9 +37,12 @@ export function isToday(d: Date): boolean {
 
 /** 全タグ一覧（UI表示順） */
 export const ALL_TAGS = [
+  // フォーム「サークルの雰囲気」選択肢（回答からそのまま取得）
   "初心者歓迎",
-  "経験者向け",
+  "ガチ・経験者向け",
   "ゆるめ",
+  "イベント多め",
+  // 自動推定タグ（generateTags で付与）
   "週1〜2",
   "週3以上",
   "無料",
@@ -47,7 +50,6 @@ export const ALL_TAGS = [
   "大人数",
   "飲み会あり",
   "兼サーOK",
-  "イベント多め",
   "インカレ",
 ] as const;
 
@@ -67,7 +69,7 @@ export function generateTags(circle: {
 
   // 雰囲気
   if (/初心者|未経験|経験不問|経験者も|苦手でも/.test(text)) tags.push("初心者歓迎");
-  if (/本格|インカレ|リーグ|大会出場|選手権/.test(text)) tags.push("経験者向け");
+  if (/本格|インカレ|リーグ|大会出場|選手権/.test(text)) tags.push("ガチ・経験者向け");
   if (/ゆる[くい]|のんびり|まったり|自由/.test(text)) tags.push("ゆるめ");
 
   // 活動頻度: activityScheduleから曜日数を数える

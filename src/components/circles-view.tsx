@@ -284,8 +284,8 @@ export function CirclesView({
 
                   <p className="text-[12px] text-gray-500 line-clamp-1 mb-1.5">{circle.description}</p>
 
-                  <div className="flex items-center gap-3 text-[11px] text-gray-400">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-3 text-[11px] text-gray-400 min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
                       <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>

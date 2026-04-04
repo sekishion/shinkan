@@ -1,6 +1,14 @@
 import type { Circle } from "./types";
+import { generateTags, type Tag } from "./utils";
 
-export const circles: Circle[] = [
+/** フォーム回答タグ + 自動推定タグをマージ */
+function mergeTags(circle: Circle): Circle {
+  const auto = generateTags(circle);
+  const merged = Array.from(new Set([...circle.tags, ...auto])) as Tag[];
+  return { ...circle, tags: merged };
+}
+
+const raw: Circle[] = [
   // ══════════════════════════════════════
   //  運動系
   // ══════════════════════════════════════
@@ -90,4 +98,6 @@ export const circles: Circle[] = [
     applyUrl: undefined,
     sns: {},
   },
-];
+] satisfies Circle[];
+
+export const circles: Circle[] = raw.map(mergeTags);
