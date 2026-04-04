@@ -21,6 +21,7 @@ export function CirclesView({
   const [campus, setCampus] = useState<string>("すべて");
   const [search, setSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<Set<Tag>>(new Set());
+  const [showTagPicker, setShowTagPicker] = useState(false);
 
   const toggleTag = (tag: Tag) => {
     setSelectedTags((prev) => {
@@ -118,27 +119,64 @@ export function CirclesView({
         </div>
 
         {/* タグ絞り込み */}
-        <div className="flex flex-wrap gap-1.5">
-          {ALL_TAGS.map((tag) => {
-            const active = selectedTags.has(tag);
-            return (
-              <button key={tag} onClick={() => toggleTag(tag)}
-                className={`px-2.5 py-1 text-[11px] rounded-full font-medium transition-all ${
-                  active
-                    ? "bg-chuo text-white shadow-sm"
-                    : "bg-gray-50 text-gray-400 border border-gray-100"
-                }`}>
-                {tag}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button onClick={() => setShowTagPicker(!showTagPicker)}
+            className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] rounded-full font-semibold transition-all ${
+              selectedTags.size > 0
+                ? "bg-chuo text-white"
+                : "bg-gray-50 text-gray-500 border border-gray-100"
+            }`}>
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+            </svg>
+            こだわり{selectedTags.size > 0 && ` (${selectedTags.size})`}
+            <svg className={`w-3 h-3 transition-transform ${showTagPicker ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* 選択中のタグをチップ表示 */}
+          {Array.from(selectedTags).map((tag) => (
+            <button key={tag} onClick={() => toggleTag(tag)}
+              className="flex items-center gap-0.5 px-2 py-1 text-[10px] rounded-full bg-chuo/10 text-chuo font-semibold">
+              {tag}
+              <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ))}
           {selectedTags.size > 0 && (
             <button onClick={() => setSelectedTags(new Set())}
-              className="px-2 py-1 text-[10px] text-gray-400 underline">
+              className="text-[10px] text-gray-400 underline">
               リセット
             </button>
           )}
         </div>
+
+        {/* タグピッカー（展開時） */}
+        {showTagPicker && (
+          <div className="mt-2 bg-gray-50 rounded-2xl p-3 border border-gray-100">
+            <div className="flex flex-wrap gap-1.5">
+              {ALL_TAGS.map((tag) => {
+                const active = selectedTags.has(tag);
+                return (
+                  <button key={tag} onClick={() => toggleTag(tag)}
+                    className={`px-2.5 py-1.5 text-[11px] rounded-full font-medium transition-all ${
+                      active
+                        ? "bg-chuo text-white shadow-sm"
+                        : "bg-white text-gray-500 border border-gray-150"
+                    }`}>
+                    {active && <span className="mr-0.5">✓</span>}{tag}
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={() => setShowTagPicker(false)}
+              className="w-full mt-2 py-1.5 text-[11px] text-gray-400 font-medium">
+              閉じる
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 一覧 */}
