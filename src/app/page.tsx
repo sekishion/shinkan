@@ -36,8 +36,13 @@ export default function Home() {
     <div className="h-screen flex flex-col bg-[#fafafa]">
       {/* --- header --- */}
       <header className="bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 pt-3 pb-1.5 shrink-0">
-        <h1 className="text-[17px] font-bold text-chuo tracking-tight">白門ナビ</h1>
-        <p className="text-[10px] text-gray-400 mt-0.5">中央大学 新歓イベントまとめ 2026</p>
+        <button
+          onClick={() => { setSelectedCircle(null); setTab("calendar"); }}
+          className="text-left"
+        >
+          <h1 className="text-[17px] font-bold text-chuo tracking-tight">白門ナビ</h1>
+          <p className="text-[10px] text-gray-400 mt-0.5">中央大学 新歓イベントまとめ 2026</p>
+        </button>
       </header>
 
       {/* --- main --- */}
