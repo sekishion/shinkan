@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Circle } from "@/lib/types";
 import { useKeeps, useReviews } from "@/lib/hooks";
 import { CalendarView } from "@/components/calendar-view";
@@ -15,6 +15,22 @@ export default function Home() {
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const { keeps, toggle } = useKeeps();
   const { addReview, getReviews, getAverage } = useReviews();
+  const [toast, setToast] = useState<string | null>(null);
+
+  const handleToggleKeep = useCallback((id: string) => {
+    const wasKept = keeps.has(id);
+    toggle(id);
+    if (!wasKept) {
+      setToast("キープしました ★");
+      if (navigator.vibrate) navigator.vibrate(50);
+    }
+  }, [keeps, toggle]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   return (
     <div className="h-screen flex flex-col bg-[#fafafa]">
@@ -30,10 +46,10 @@ export default function Home() {
           <CalendarView keeps={keeps} onSelectCircle={setSelectedCircle} />
         )}
         {tab === "search" && (
-          <CirclesView keeps={keeps} onToggleKeep={toggle} onSelectCircle={setSelectedCircle} />
+          <CirclesView keeps={keeps} onToggleKeep={handleToggleKeep} onSelectCircle={setSelectedCircle} />
         )}
         {tab === "keeps" && (
-          <KeepsView keeps={keeps} onToggleKeep={toggle} onSelectCircle={setSelectedCircle} />
+          <KeepsView keeps={keeps} onToggleKeep={handleToggleKeep} onSelectCircle={setSelectedCircle} />
         )}
       </main>
 
@@ -58,13 +74,21 @@ export default function Home() {
         <CircleDetail
           circle={selectedCircle}
           isKept={keeps.has(selectedCircle.id)}
-          onToggleKeep={() => toggle(selectedCircle.id)}
+          onToggleKeep={() => handleToggleKeep(selectedCircle.id)}
           onClose={() => setSelectedCircle(null)}
           reviews={getReviews(selectedCircle.id)}
           averageRating={getAverage(selectedCircle.id)}
           onAddReview={(rating, comment) => addReview(selectedCircle.id, rating, comment)}
           onSelectCircle={setSelectedCircle}
         />
+      )}
+      {/* --- toast --- */}
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] animate-bounce-in">
+          <div className="bg-gray-800 text-white text-[13px] font-semibold px-5 py-2.5 rounded-full shadow-lg">
+            {toast}
+          </div>
+        </div>
       )}
     </div>
   );

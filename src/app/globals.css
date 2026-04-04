@@ -36,3 +36,10 @@ body {
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes bounce-in {
+  0% { opacity: 0; transform: translateY(16px) scale(0.9); }
+  50% { opacity: 1; transform: translateY(-4px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-bounce-in { animation: bounce-in 0.35s ease-out; }

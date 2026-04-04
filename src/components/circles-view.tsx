@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { circles } from "@/lib/data";
 import { Circle, Category } from "@/lib/types";
-import { toISO, DAY_NAMES, ALL_TAGS, Tag } from "@/lib/utils";
+import { toISO, DAY_NAMES, ALL_TAGS, Tag, countdownLabel } from "@/lib/utils";
 
 type Filter = "all" | Category;
 const CAMPUSES = ["すべて", "多摩", "後楽園"] as const;
@@ -22,6 +22,7 @@ export function CirclesView({
   const [search, setSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<Set<Tag>>(new Set());
   const [showTagPicker, setShowTagPicker] = useState(false);
+  const [eventFilter, setEventFilter] = useState<"" | "today" | "week">("");
 
   const toggleTag = (tag: Tag) => {
     setSelectedTags((prev) => {
@@ -41,9 +42,23 @@ export function CirclesView({
   }, []);
 
   const filtered = useMemo(() => {
+    const today = toISO(new Date());
+    const weekEnd = (() => {
+      const d = new Date();
+      d.setDate(d.getDate() + 7);
+      return toISO(d);
+    })();
+
     return circles.filter((c) => {
       if (filter !== "all" && c.category !== filter) return false;
       if (campus !== "すべて" && c.campus !== campus && c.campus !== "両方") return false;
+
+      // 日付フィルタ
+      if (eventFilter === "today") {
+        if (!c.events.some((ev) => ev.date === today)) return false;
+      } else if (eventFilter === "week") {
+        if (!c.events.some((ev) => ev.date >= today && ev.date <= weekEnd)) return false;
+      }
 
       // タグ絞り込み: 選択した全タグを持っているか（AND条件）
       if (selectedTags.size > 0) {
@@ -67,7 +82,7 @@ export function CirclesView({
       if (!a.featured && b.featured) return 1;
       return 0;
     });
-  }, [filter, campus, search, selectedTags]);
+  }, [filter, campus, search, selectedTags, eventFilter]);
 
   return (
     <div className="flex flex-col h-full">
@@ -118,8 +133,22 @@ export function CirclesView({
           </div>
         </div>
 
-        {/* タグ絞り込み */}
+        {/* タグ絞り込み + 日付フィルタ */}
         <div className="flex items-center gap-1.5 flex-wrap">
+          {/* 日付フィルタ */}
+          {(["today", "week"] as const).map((ef) => {
+            const active = eventFilter === ef;
+            const label = ef === "today" ? "今日イベント" : "今週イベント";
+            return (
+              <button key={ef} onClick={() => setEventFilter(active ? "" : ef)}
+                className={`px-2.5 py-1.5 text-[11px] rounded-full font-semibold transition-all ${
+                  active ? "bg-chuo text-white" : "bg-gray-50 text-gray-500 border border-gray-100"
+                }`}>
+                {label}
+              </button>
+            );
+          })}
+
           <button onClick={() => setShowTagPicker(!showTagPicker)}
             className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] rounded-full font-semibold transition-all ${
               selectedTags.size > 0
@@ -221,7 +250,7 @@ export function CirclesView({
                       : "bg-white border border-gray-100"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                  <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         {circle.featured && <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-chuo/10 text-chuo font-bold shrink-0">PR</span>}
@@ -245,20 +274,31 @@ export function CirclesView({
                     </button>
                   </div>
 
-                  <p className="text-[12px] text-gray-500 line-clamp-1 mb-2">{circle.description}</p>
-
-                  {/* タグ表示 */}
-                  {circle.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {circle.tags.map((tag) => (
-                        <span key={tag} className={`text-[9px] px-1.5 py-0.5 rounded-md font-medium ${
-                          selectedTags.has(tag as Tag) ? "bg-chuo/10 text-chuo" : "bg-gray-50 text-gray-400"
-                        }`}>
-                          {tag}
+                  {/* 次のイベント（最重要情報を上部に配置） */}
+                  {(() => {
+                    const today = toISO(new Date());
+                    const upcoming = circle.events.find((ev) => ev.date >= today);
+                    if (!upcoming) return null;
+                    const d = new Date(upcoming.date);
+                    const cd = countdownLabel(upcoming.date);
+                    return (
+                      <div className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 mb-1.5 ${cd.urgent ? "bg-red-50 border border-red-100" : "bg-chuo-light border border-chuo/10"}`}>
+                        <svg className={`w-3.5 h-3.5 shrink-0 ${cd.urgent ? "text-red-400" : "text-chuo"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className={`text-[12px] font-semibold truncate ${cd.urgent ? "text-red-500" : "text-chuo"}`}>
+                          {d.getMonth() + 1}/{d.getDate()}({DAY_NAMES[d.getDay()]}) {upcoming.time} — {upcoming.description}
                         </span>
-                      ))}
-                    </div>
-                  )}
+                        {cd.text && (
+                          <span className={`text-[10px] font-bold shrink-0 px-1.5 py-0.5 rounded-full ml-auto ${cd.urgent ? "bg-red-100 text-red-500" : "bg-chuo/10 text-chuo"}`}>
+                            {cd.text}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  <p className="text-[12px] text-gray-500 line-clamp-1 mb-1.5">{circle.description}</p>
 
                   <div className="flex items-center gap-3 text-[11px] text-gray-400">
                     <div className="flex items-center gap-1.5">
@@ -271,23 +311,6 @@ export function CirclesView({
                       <span className="shrink-0 text-gray-500 font-medium">{circle.fee}</span>
                     )}
                   </div>
-
-                  {(() => {
-                    const today = toISO(new Date());
-                    const upcoming = circle.events.find((ev) => ev.date >= today);
-                    if (!upcoming) return null;
-                    const d = new Date(upcoming.date);
-                    return (
-                      <div className="flex items-center gap-2 text-[11px] text-chuo font-medium mt-1">
-                        <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span className="truncate">
-                          {d.getMonth() + 1}/{d.getDate()}({DAY_NAMES[d.getDay()]}) {upcoming.time} — {upcoming.description}
-                        </span>
-                      </div>
-                    );
-                  })()}
                 </button>
               );
             })}

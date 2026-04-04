@@ -99,6 +99,20 @@ export function generateTags(circle: {
   return tags;
 }
 
+/** イベント日までのカウントダウンラベル */
+export function countdownLabel(eventDate: string): { text: string; urgent: boolean } {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(eventDate);
+  target.setHours(0, 0, 0, 0);
+  const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return { text: "", urgent: false };
+  if (diff === 0) return { text: "今日!", urgent: true };
+  if (diff === 1) return { text: "明日!", urgent: true };
+  if (diff <= 7) return { text: `あと${diff}日`, urgent: false };
+  return { text: "", urgent: false };
+}
+
 /** "12:00〜13:00" → { start: 12, end: 13 } / "18:30〜" → { start: 18.5, end: 19.5 } */
 export function parseTimeRange(time: string): { start: number; end: number } {
   const parts = time.split("〜");
