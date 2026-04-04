@@ -15,7 +15,7 @@ export const circles: Circle[] = [
     fee: "¥3,000/年",
     memberCount: "約100名",
     events: [],
-    tags: ["初心者歓迎", "大人数", "飲み会あり"],
+    tags: ["初心者歓迎", "大人数", "飲み会あり", "イベント多め"],
     sns: { instagram: "https://instagram.com/example" },
   },
   {
@@ -28,7 +28,7 @@ export const circles: Circle[] = [
     activitySchedule: "月1回程度",
     fee: "¥8,000/年",
     events: [],
-    tags: ["週1〜2"],
+    tags: ["週1〜2", "インカレ"],
     sns: {},
   },
   {
@@ -96,7 +96,7 @@ export const circles: Circle[] = [
     fee: "¥6,000/年（1年次）",
     memberCount: "約70名",
     events: [],
-    tags: ["初心者歓迎", "大人数"],
+    tags: ["初心者歓迎", "大人数", "兼サーOK"],
     sns: {},
   },
   {
@@ -427,7 +427,7 @@ export const circles: Circle[] = [
     fee: "¥5,000/年",
     memberCount: "約60名",
     events: [],
-    tags: ["初心者歓迎", "週1〜2", "大人数"],
+    tags: ["初心者歓迎", "週1〜2", "大人数", "イベント多め"],
     sns: {},
   },
   {

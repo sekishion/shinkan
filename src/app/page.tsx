@@ -63,6 +63,7 @@ export default function Home() {
           reviews={getReviews(selectedCircle.id)}
           averageRating={getAverage(selectedCircle.id)}
           onAddReview={(rating, comment) => addReview(selectedCircle.id, rating, comment)}
+          onSelectCircle={setSelectedCircle}
         />
       )}
     </div>

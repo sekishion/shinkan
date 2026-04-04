@@ -31,6 +31,14 @@ export function CirclesView({
     });
   };
 
+  // カテゴリ別件数（フィルタ前の全体から算出）
+  const categoryCounts = useMemo(() => {
+    const all = circles.length;
+    const sports = circles.filter((c) => c.category === "運動系").length;
+    const culture = circles.filter((c) => c.category === "文化系").length;
+    return { all, sports, culture };
+  }, []);
+
   const filtered = useMemo(() => {
     return circles.filter((c) => {
       if (filter !== "all" && c.category !== filter) return false;
@@ -73,17 +81,29 @@ export function CirclesView({
             className="w-full pl-10 pr-4 py-2 bg-gray-50 rounded-xl text-[13px] border border-gray-100 focus:outline-none focus:ring-2 focus:ring-chuo/15 focus:border-chuo/30" />
         </div>
 
+        {/* クイック検索 */}
+        {!search && (
+          <div className="flex gap-1.5 mb-2 overflow-x-auto no-scrollbar">
+            {["テニス", "サッカー", "バンド", "ダンス", "バスケ", "ボランティア", "旅行", "写真"].map((kw) => (
+              <button key={kw} onClick={() => setSearch(kw)}
+                className="px-2.5 py-1 text-[11px] rounded-full bg-white border border-gray-150 text-gray-500 font-medium whitespace-nowrap shrink-0 active:bg-gray-50">
+                {kw}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* カテゴリ + キャンパス */}
         <div className="flex gap-2 items-center mb-2">
           <div className="flex gap-0.5 flex-1 bg-gray-100/70 rounded-xl p-0.5">
             {([
-              { label: "すべて", value: "all" as Filter },
-              { label: "運動系", value: "運動系" as Filter },
-              { label: "文化系", value: "文化系" as Filter },
+              { label: "すべて", value: "all" as Filter, count: categoryCounts.all },
+              { label: "運動系", value: "運動系" as Filter, count: categoryCounts.sports },
+              { label: "文化系", value: "文化系" as Filter, count: categoryCounts.culture },
             ]).map((tab) => (
               <button key={tab.value} onClick={() => setFilter(tab.value)}
                 className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg transition-all ${filter === tab.value ? "bg-white text-gray-800 shadow-sm" : "text-gray-400"}`}>
-                {tab.label}
+                {tab.label}<span className="text-[9px] ml-0.5 opacity-60">{tab.count}</span>
               </button>
             ))}
           </div>
@@ -123,6 +143,22 @@ export function CirclesView({
 
       {/* 一覧 */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
+        {/* PR枠デモバナー */}
+        <div className="mb-3 bg-gradient-to-r from-chuo/5 to-chuo/10 border-2 border-dashed border-chuo/20 rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-chuo/10 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-chuo" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold text-chuo">PR枠で目立とう!</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">新入生の目に留まる特別枠。検索上位+PRバッジ付き</p>
+            </div>
+            <span className="text-[10px] font-bold text-chuo bg-white px-2.5 py-1.5 rounded-lg shrink-0 shadow-sm">¥10,000</span>
+          </div>
+        </div>
+
         <p className="text-[11px] text-gray-400 mb-2">{filtered.length}件のサークル</p>
 
         {filtered.length === 0 ? (

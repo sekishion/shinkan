@@ -33,6 +33,9 @@ export const ALL_TAGS = [
   "少人数",
   "大人数",
   "飲み会あり",
+  "兼サーOK",
+  "イベント多め",
+  "インカレ",
 ] as const;
 
 export type Tag = (typeof ALL_TAGS)[number];
@@ -81,6 +84,17 @@ export function generateTags(circle: {
   // イベント内容から
   const eventTexts = circle.events.map((e) => e.description).join(" ");
   if (/コンパ|飲み会|懇親会/.test(eventTexts)) tags.push("飲み会あり");
+
+  // 兼サーOK
+  if (/兼サー|掛け持ち|兼部|他サークル/.test(text)) tags.push("兼サーOK");
+
+  // イベント多め（イベント4件以上 or テキストにイベント系キーワード）
+  if (circle.events.length >= 4 || /BBQ|ハロウィン|クリスマス|合宿|旅行|イベント盛り/.test(text)) {
+    tags.push("イベント多め");
+  }
+
+  // インカレ
+  if (/インカレ|他大/.test(text)) tags.push("インカレ");
 
   return tags;
 }

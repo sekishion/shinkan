@@ -21,6 +21,8 @@ export interface Circle {
   activitySchedule: string;
   fee?: string;
   memberCount?: string;
+  genderRatio?: string;
+  multiClubOk?: boolean;
   belongings?: string;
   notes?: string;
   applyUrl?: string;

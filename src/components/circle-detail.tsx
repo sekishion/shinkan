@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Circle } from "@/lib/types";
+import { circles } from "@/lib/data";
 import { DAY_NAMES } from "@/lib/utils";
 import { StoredReview } from "@/lib/hooks";
 import { XIcon, InstagramIcon, LineIcon } from "./icons";
@@ -14,6 +15,7 @@ export function CircleDetail({
   reviews,
   averageRating,
   onAddReview,
+  onSelectCircle,
 }: {
   circle: Circle;
   isKept: boolean;
@@ -22,10 +24,25 @@ export function CircleDetail({
   reviews: StoredReview[];
   averageRating: number | null;
   onAddReview: (rating: number, comment: string) => void;
+  onSelectCircle?: (c: Circle) => void;
 }) {
   const isSports = circle.category === "運動系";
   const badgeStyle = isSports ? "bg-sports-light text-sports" : "bg-culture-light text-culture";
   const featured = circle.featured;
+
+  // 似たサークル: 同カテゴリ → タグ共通数でスコアリング → 上位3件
+  const similarCircles = useMemo(() => {
+    return circles
+      .filter((c) => c.id !== circle.id && c.category === circle.category)
+      .map((c) => {
+        const shared = c.tags.filter((t) => circle.tags.includes(t)).length;
+        const campusBonus = c.campus === circle.campus ? 1 : 0;
+        return { circle: c, score: shared + campusBonus };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((s) => s.circle);
+  }, [circle]);
 
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newRating, setNewRating] = useState(0);
@@ -95,6 +112,8 @@ export function CircleDetail({
           <div className="space-y-2 mb-5">
             <InfoCard emoji="🕐" label="活動日時" value={circle.activitySchedule} />
             {circle.fee && <InfoCard emoji="💰" label="部費" value={circle.fee} />}
+            {circle.genderRatio && <InfoCard emoji="👥" label="男女比" value={circle.genderRatio} />}
+            {circle.multiClubOk && <InfoCard emoji="🤝" label="兼サー" value="掛け持ちOK!" />}
             {circle.belongings && <InfoCard emoji="🎒" label="持ち物" value={circle.belongings} />}
             {circle.notes && <InfoCard emoji="💡" label="ひとこと" value={circle.notes} />}
           </div>
@@ -203,6 +222,31 @@ export function CircleDetail({
               <p className="text-[12px] text-gray-300 text-center py-3">まだ評価がありません</p>
             )}
           </div>
+
+          {/* 似たサークル */}
+          {similarCircles.length > 0 && (
+            <div className="mb-6">
+              <p className="text-[13px] font-semibold text-gray-600 mb-2">似たサークル</p>
+              <div className="space-y-2">
+                {similarCircles.map((sc) => {
+                  const scSports = sc.category === "運動系";
+                  return (
+                    <button key={sc.id} onClick={() => onSelectCircle?.(sc)}
+                      className="w-full text-left bg-gray-50 rounded-2xl p-3.5 active:scale-[0.98] transition-transform">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-[13px] font-bold text-gray-700 truncate">{sc.name}</h4>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${scSports ? "bg-sports-light text-sports" : "bg-culture-light text-culture"}`}>
+                          {sc.category}
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400 shrink-0">{sc.campus}</span>
+                      </div>
+                      <p className="text-[11px] text-gray-400 line-clamp-1">{sc.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── 固定フッター: CTA ── */}
