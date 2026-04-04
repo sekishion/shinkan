@@ -65,7 +65,7 @@ export function CalendarView({
   keeps: Set<string>;
   onSelectCircle: (c: Circle) => void;
 }) {
-  const [viewMode, setViewMode] = useState<ViewMode>("day");
+  const [viewMode, setViewModeRaw] = useState<ViewMode>("day");
   const [weekOffset, setWeekOffset] = useState(0);
   const [dayOffset, setDayOffset] = useState(0); // 3日表示用
   const [selectedDayIdx, setSelectedDayIdx] = useState(() => {
@@ -82,6 +82,32 @@ export function CalendarView({
   const [showOnboarding, setShowOnboarding] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const threeDayScrollRef = useRef<HTMLDivElement>(null);
+
+  // モード切替時に日付を同期
+  const setViewMode = (mode: ViewMode) => {
+    if (mode === "day" && viewMode === "3day") {
+      // 3日表示の先頭日を日表示に反映
+      const now = new Date();
+      const targetDate = new Date(now);
+      targetDate.setDate(now.getDate() + dayOffset * 3);
+      const diffDays = Math.round((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      setWeekOffset(Math.round(diffDays / 7));
+      const day = targetDate.getDay();
+      setSelectedDayIdx(day === 0 ? 6 : day - 1);
+    } else if (mode === "3day" && viewMode === "day") {
+      // 日表示の選択日を3日表示に反映
+      const now = new Date();
+      const diffDays = Math.round((selectedDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      setDayOffset(Math.round(diffDays / 3));
+    } else if (mode === "month") {
+      // 現在見ている日付の月を表示
+      const target = viewMode === "3day"
+        ? new Date(new Date().setDate(new Date().getDate() + dayOffset * 3))
+        : selectedDate;
+      setMonthDate({ year: target.getFullYear(), month: target.getMonth() });
+    }
+    setViewModeRaw(mode);
+  };
 
   useEffect(() => {
     if (!localStorage.getItem("shinkan-onboarded-cal")) setShowOnboarding(true);
@@ -180,7 +206,7 @@ export function CalendarView({
     // selectedDayIdxを計算（月曜=0）
     const day = date.getDay();
     setSelectedDayIdx(day === 0 ? 6 : day - 1);
-    setViewMode("day");
+    setViewModeRaw("day");
   };
 
   const prevMonth = () => {
