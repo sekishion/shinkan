@@ -242,22 +242,6 @@ export function CalendarView({
 
       {/* ── タイムテーブル ── */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto bg-white">
-        {/* PR枠デモバナー */}
-        <div className="mx-4 mt-3 mb-2 bg-gradient-to-r from-chuo/5 to-chuo/10 border-2 border-dashed border-chuo/20 rounded-2xl p-3.5">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-chuo/10 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-chuo" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-bold text-chuo">ここに広告を載せませんか?</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">カレンダー上部の注目枠。新入生に最初に見られます</p>
-            </div>
-            <span className="text-[9px] font-bold text-chuo bg-white px-2 py-1 rounded-lg shrink-0 shadow-sm">PR枠</span>
-          </div>
-        </div>
-
         {todayEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 py-20">
             <p className="text-4xl mb-3">📅</p>
