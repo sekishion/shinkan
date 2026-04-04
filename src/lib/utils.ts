@@ -20,6 +20,71 @@ export function isToday(d: Date): boolean {
   return toISO(d) === toISO(new Date());
 }
 
+// ─── タグ定義 ───
+
+/** 全タグ一覧（UI表示順） */
+export const ALL_TAGS = [
+  "初心者歓迎",
+  "経験者向け",
+  "ゆるめ",
+  "週1〜2",
+  "週3以上",
+  "無料",
+  "少人数",
+  "大人数",
+  "飲み会あり",
+] as const;
+
+export type Tag = (typeof ALL_TAGS)[number];
+
+/** Circleのフィールドからタグを自動生成 */
+export function generateTags(circle: {
+  description: string;
+  notes?: string;
+  activitySchedule: string;
+  fee?: string;
+  memberCount?: string;
+  events: { description: string }[];
+}): Tag[] {
+  const tags: Tag[] = [];
+  const text = `${circle.description} ${circle.notes || ""}`.toLowerCase();
+
+  // 雰囲気
+  if (/初心者|未経験|経験不問|経験者も|苦手でも/.test(text)) tags.push("初心者歓迎");
+  if (/本格|インカレ|リーグ|大会出場|選手権/.test(text)) tags.push("経験者向け");
+  if (/ゆる[くい]|のんびり|まったり|自由/.test(text)) tags.push("ゆるめ");
+
+  // 活動頻度: activityScheduleから曜日数を数える
+  const dayMatches = circle.activitySchedule.match(/[月火水木金土日]/g);
+  const dayCount = dayMatches ? new Set(dayMatches).size : 0;
+  if (/不定期|月[12]回/.test(circle.activitySchedule) || dayCount <= 2) {
+    tags.push("週1〜2");
+  } else if (dayCount >= 3) {
+    tags.push("週3以上");
+  }
+
+  // 費用
+  if (circle.fee && /なし|無料|0円|¥0/.test(circle.fee)) {
+    tags.push("無料");
+  }
+
+  // 人数
+  if (circle.memberCount) {
+    const numMatch = circle.memberCount.match(/(\d+)/);
+    if (numMatch) {
+      const count = parseInt(numMatch[1], 10);
+      if (count <= 30) tags.push("少人数");
+      if (count >= 50) tags.push("大人数");
+    }
+  }
+
+  // イベント内容から
+  const eventTexts = circle.events.map((e) => e.description).join(" ");
+  if (/コンパ|飲み会|懇親会/.test(eventTexts)) tags.push("飲み会あり");
+
+  return tags;
+}
+
 /** "12:00〜13:00" → { start: 12, end: 13 } / "18:30〜" → { start: 18.5, end: 19.5 } */
 export function parseTimeRange(time: string): { start: number; end: number } {
   const parts = time.split("〜");

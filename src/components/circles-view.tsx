@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { circles } from "@/lib/data";
 import { Circle, Category } from "@/lib/types";
-import { toISO, DAY_NAMES } from "@/lib/utils";
+import { toISO, DAY_NAMES, ALL_TAGS, Tag } from "@/lib/utils";
 
 type Filter = "all" | Category;
 const CAMPUSES = ["すべて", "多摩", "後楽園"] as const;
@@ -20,23 +20,45 @@ export function CirclesView({
   const [filter, setFilter] = useState<Filter>("all");
   const [campus, setCampus] = useState<string>("すべて");
   const [search, setSearch] = useState("");
+  const [selectedTags, setSelectedTags] = useState<Set<Tag>>(new Set());
+
+  const toggleTag = (tag: Tag) => {
+    setSelectedTags((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag);
+      else next.add(tag);
+      return next;
+    });
+  };
 
   const filtered = useMemo(() => {
     return circles.filter((c) => {
       if (filter !== "all" && c.category !== filter) return false;
       if (campus !== "すべて" && c.campus !== campus && c.campus !== "両方") return false;
+
+      // タグ絞り込み: 選択した全タグを持っているか（AND条件）
+      if (selectedTags.size > 0) {
+        for (const tag of selectedTags) {
+          if (!c.tags.includes(tag)) return false;
+        }
+      }
+
+      // テキスト検索: 名前・説明・タグにヒット
       if (search) {
         const q = search.toLowerCase();
-        return c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q);
+        const inName = c.name.toLowerCase().includes(q);
+        const inDesc = c.description.toLowerCase().includes(q);
+        const inTags = c.tags.some((t) => t.toLowerCase().includes(q));
+        if (!inName && !inDesc && !inTags) return false;
       }
+
       return true;
     }).sort((a, b) => {
-      // PR（featured）を先頭に
       if (a.featured && !b.featured) return -1;
       if (!a.featured && b.featured) return 1;
       return 0;
     });
-  }, [filter, campus, search]);
+  }, [filter, campus, search, selectedTags]);
 
   return (
     <div className="flex flex-col h-full">
@@ -47,32 +69,55 @@ export function CirclesView({
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input type="text" placeholder="サークル名で検索..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <input type="text" placeholder="サークル名・タグで検索..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-gray-50 rounded-xl text-[13px] border border-gray-100 focus:outline-none focus:ring-2 focus:ring-chuo/15 focus:border-chuo/30" />
         </div>
 
-        {/* フィルタ */}
-        <div className="flex gap-1 bg-gray-100/70 rounded-xl p-0.5 mb-2">
-          {([
-            { label: "すべて", value: "all" as Filter },
-            { label: "運動系", value: "運動系" as Filter },
-            { label: "文化系", value: "文化系" as Filter },
-          ]).map((tab) => (
-            <button key={tab.value} onClick={() => setFilter(tab.value)}
-              className={`flex-1 py-1.5 text-[12px] font-semibold rounded-lg transition-all ${filter === tab.value ? "bg-white text-gray-800 shadow-sm" : "text-gray-400"}`}>
-              {tab.label}
-            </button>
-          ))}
+        {/* カテゴリ + キャンパス */}
+        <div className="flex gap-2 items-center mb-2">
+          <div className="flex gap-0.5 flex-1 bg-gray-100/70 rounded-xl p-0.5">
+            {([
+              { label: "すべて", value: "all" as Filter },
+              { label: "運動系", value: "運動系" as Filter },
+              { label: "文化系", value: "文化系" as Filter },
+            ]).map((tab) => (
+              <button key={tab.value} onClick={() => setFilter(tab.value)}
+                className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg transition-all ${filter === tab.value ? "bg-white text-gray-800 shadow-sm" : "text-gray-400"}`}>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 shrink-0">
+            {CAMPUSES.map((c) => (
+              <button key={c} onClick={() => setCampus(c)}
+                className={`px-2 py-1.5 text-[10px] rounded-lg font-semibold transition-all ${campus === c ? "bg-chuo text-white" : "bg-gray-100 text-gray-400"}`}>
+                {c === "すべて" ? "全" : c}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* キャンパス */}
-        <div className="flex gap-1.5">
-          {CAMPUSES.map((c) => (
-            <button key={c} onClick={() => setCampus(c)}
-              className={`px-2.5 py-1 text-[11px] rounded-full font-medium transition-colors ${campus === c ? "bg-chuo text-white" : "bg-gray-100 text-gray-400"}`}>
-              {c}
+        {/* タグ絞り込み */}
+        <div className="flex flex-wrap gap-1.5">
+          {ALL_TAGS.map((tag) => {
+            const active = selectedTags.has(tag);
+            return (
+              <button key={tag} onClick={() => toggleTag(tag)}
+                className={`px-2.5 py-1 text-[11px] rounded-full font-medium transition-all ${
+                  active
+                    ? "bg-chuo text-white shadow-sm"
+                    : "bg-gray-50 text-gray-400 border border-gray-100"
+                }`}>
+                {tag}
+              </button>
+            );
+          })}
+          {selectedTags.size > 0 && (
+            <button onClick={() => setSelectedTags(new Set())}
+              className="px-2 py-1 text-[10px] text-gray-400 underline">
+              リセット
             </button>
-          ))}
+          )}
         </div>
       </div>
 
@@ -84,6 +129,7 @@ export function CirclesView({
           <div className="text-center py-16 text-gray-400">
             <p className="text-3xl mb-2">🔍</p>
             <p className="text-[13px] font-medium">見つかりませんでした</p>
+            <p className="text-[11px] mt-1 text-gray-300">条件を変えて探してみてください</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -127,6 +173,19 @@ export function CirclesView({
 
                   <p className="text-[12px] text-gray-500 line-clamp-1 mb-2">{circle.description}</p>
 
+                  {/* タグ表示 */}
+                  {circle.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {circle.tags.map((tag) => (
+                        <span key={tag} className={`text-[9px] px-1.5 py-0.5 rounded-md font-medium ${
+                          selectedTags.has(tag as Tag) ? "bg-chuo/10 text-chuo" : "bg-gray-50 text-gray-400"
+                        }`}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3 text-[11px] text-gray-400">
                     <div className="flex items-center gap-1.5">
                       <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -135,7 +194,7 @@ export function CirclesView({
                       <span className="truncate">{circle.activitySchedule}</span>
                     </div>
                     {circle.fee && (
-                      <span className="shrink-0 text-gray-500 font-medium">💰 {circle.fee}</span>
+                      <span className="shrink-0 text-gray-500 font-medium">{circle.fee}</span>
                     )}
                   </div>
 

@@ -26,6 +26,8 @@ export interface Circle {
   applyUrl?: string;
   /** 有料プロモーション枠（trueだとカレンダー上部に目立つ表示） */
   featured?: boolean;
+  /** 自動付与タグ（活動頻度・雰囲気・費用帯など） */
+  tags: string[];
   /** LINE追加URL（サークル側の最重要導線） */
   lineAddUrl?: string;
   sns: {
