@@ -6,7 +6,7 @@ import { Circle, Category } from "@/lib/types";
 import { toISO, DAY_NAMES, ALL_TAGS, Tag, countdownLabel } from "@/lib/utils";
 
 type Filter = "all" | Category;
-const CAMPUSES = ["すべて", "多摩", "後楽園"] as const;
+const CAMPUSES = ["すべて", "多摩", "後楽園", "茗荷谷"] as const;
 
 export function CirclesView({
   keeps,
@@ -51,7 +51,7 @@ export function CirclesView({
 
     return circles.filter((c) => {
       if (filter !== "all" && c.category !== filter) return false;
-      if (campus !== "すべて" && c.campus !== campus && c.campus !== "両方") return false;
+      if (campus !== "すべて" && c.campus !== campus && c.campus !== "複数") return false;
 
       // 日付フィルタ
       if (eventFilter === "today") {

@@ -22,7 +22,7 @@ const HOUR_END = 22;
 const HOUR_HEIGHT = 64;
 
 type Filter = "all" | Category;
-type CampusFilter = "all" | "多摩" | "後楽園";
+type CampusFilter = "all" | "多摩" | "後楽園" | "茗荷谷";
 
 // ─── 時間重複処理: 重なるイベントを横に並べる ───
 function layoutEvents(events: CalendarEvent[]): LayoutEvent[] {
@@ -94,7 +94,7 @@ export function CalendarView({
     for (const date of weekDates) map[toISO(date)] = [];
     for (const circle of circles) {
       if (filter !== "all" && circle.category !== filter) continue;
-      if (campusFilter !== "all" && circle.campus !== campusFilter && circle.campus !== "両方") continue;
+      if (campusFilter !== "all" && circle.campus !== campusFilter && circle.campus !== "複数") continue;
       for (let ei = 0; ei < circle.events.length; ei++) {
         const ev = circle.events[ei];
         if (map[ev.date] !== undefined) {
@@ -228,7 +228,7 @@ export function CalendarView({
 
           {/* キャンパス */}
           <div className="flex gap-1 shrink-0">
-            {(["all", "多摩", "後楽園"] as CampusFilter[]).map((c) => (
+            {(["all", "多摩", "後楽園", "茗荷谷"] as CampusFilter[]).map((c) => (
               <button key={c} onClick={() => setCampusFilter(c)}
                 className={`px-2 py-1.5 text-[10px] rounded-lg font-semibold transition-all ${
                   campusFilter === c ? "bg-chuo text-white" : "bg-gray-100 text-gray-400"

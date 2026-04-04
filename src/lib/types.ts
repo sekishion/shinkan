@@ -1,6 +1,6 @@
 export type Category = "運動系" | "文化系";
 export type CircleType = "部活" | "サークル" | "その他";
-export type Campus = "多摩" | "後楽園" | "両方";
+export type Campus = "多摩" | "後楽園" | "茗荷谷" | "複数";
 
 export interface ShinkanEvent {
   /** ISO形式 "2026-04-07" */
