@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { circles } from "@/lib/data";
 import { Circle, Category } from "@/lib/types";
+import { toISO, DAY_NAMES } from "@/lib/utils";
 
 type Filter = "all" | Category;
 const CAMPUSES = ["すべて", "多摩", "後楽園"] as const;
@@ -89,7 +90,6 @@ export function CirclesView({
             {filtered.map((circle) => {
               const isSports = circle.category === "運動系";
               const isKept = keeps.has(circle.id);
-              const nextEvent = circle.events[0];
 
               return (
                 <button
@@ -139,14 +139,22 @@ export function CirclesView({
                     )}
                   </div>
 
-                  {nextEvent && (
-                    <div className="flex items-center gap-2 text-[11px] text-chuo font-medium mt-1">
-                      <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="truncate">次の新歓: {nextEvent.description}</span>
-                    </div>
-                  )}
+                  {(() => {
+                    const today = toISO(new Date());
+                    const upcoming = circle.events.find((ev) => ev.date >= today);
+                    if (!upcoming) return null;
+                    const d = new Date(upcoming.date);
+                    return (
+                      <div className="flex items-center gap-2 text-[11px] text-chuo font-medium mt-1">
+                        <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="truncate">
+                          {d.getMonth() + 1}/{d.getDate()}({DAY_NAMES[d.getDay()]}) {upcoming.time} — {upcoming.description}
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </button>
               );
             })}
