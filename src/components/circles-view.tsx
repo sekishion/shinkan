@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { circles } from "@/lib/data";
 import { Circle, Category } from "@/lib/types";
-import { toISO, DAY_NAMES, ALL_TAGS, Tag, countdownLabel } from "@/lib/utils";
+import { toISO, DAY_NAMES, ALL_TAGS, Tag, countdownLabel, detectActivity } from "@/lib/utils";
 
 type Filter = "all" | Category;
 const CAMPUSES = ["すべて", "多摩", "後楽園", "茗荷谷"] as const;
@@ -223,6 +223,7 @@ export function CirclesView({
             {filtered.map((circle) => {
               const isSports = circle.category === "運動系";
               const isKept = keeps.has(circle.id);
+              const activity = detectActivity(circle.name, circle.description);
 
               return (
                 <button
@@ -235,6 +236,13 @@ export function CirclesView({
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
+                    {/* アクティビティアイコン */}
+                    {activity && (
+                      <div className="shrink-0 w-11 h-11 rounded-xl bg-gray-50 flex flex-col items-center justify-center">
+                        <span className="text-[20px] leading-none">{activity.emoji}</span>
+                        <span className="text-[8px] font-bold text-gray-500 mt-0.5 leading-none">{activity.label}</span>
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         {circle.featured && <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-chuo/10 text-chuo font-bold shrink-0">PR</span>}
