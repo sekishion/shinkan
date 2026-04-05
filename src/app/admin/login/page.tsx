@@ -5,6 +5,16 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+function translateAuthError(msg: string): string {
+  if (/rate limit/i.test(msg)) return "送信回数の上限に達しました。しばらく待ってからお試しください。";
+  if (/email.*invalid/i.test(msg)) return "有効なメールアドレスを入力してください。";
+  if (/already registered/i.test(msg)) return "このメールアドレスは既に登録されています。ログインしてください。";
+  if (/invalid.*credentials/i.test(msg)) return "メールアドレスまたはパスワードが正しくありません。";
+  if (/email not confirmed/i.test(msg)) return "メールアドレスが確認されていません。確認メールのリンクをクリックしてください。";
+  if (/password/i.test(msg) && /short|weak|length/i.test(msg)) return "パスワードは6文字以上にしてください。";
+  return "エラーが発生しました。もう一度お試しください。";
+}
+
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();
   const router = useRouter();
@@ -32,7 +42,7 @@ export default function LoginPage() {
       const err = await signUp(email, password);
       setLoading(false);
       if (err) {
-        setError(err.message);
+        setError(translateAuthError(err.message));
         return;
       }
       setSignUpDone(true);
@@ -40,7 +50,7 @@ export default function LoginPage() {
       const err = await signIn(email, password);
       setLoading(false);
       if (err) {
-        setError("メールアドレスまたはパスワードが正しくありません");
+        setError(translateAuthError(err.message));
         return;
       }
       router.push("/admin");
@@ -63,6 +73,11 @@ export default function LoginPage() {
           >
             ログイン画面へ
           </button>
+          <div className="mt-4">
+            <Link href="/" className="text-[12px] text-gray-400 hover:text-chuo transition-colors">
+              ← 白門ナビに戻る
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -124,6 +139,12 @@ export default function LoginPage() {
         >
           {isSignUp ? "すでにアカウントをお持ちの方" : "はじめての方はこちら（アカウント作成）"}
         </button>
+
+        <div className="mt-6 pt-4 border-t border-gray-100 text-center">
+          <Link href="/" className="text-[12px] text-gray-400 hover:text-chuo transition-colors">
+            ← 白門ナビに戻る
+          </Link>
+        </div>
       </div>
     </div>
   );

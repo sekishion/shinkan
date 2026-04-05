@@ -83,9 +83,14 @@ export default function AdminPage() {
             <Link href="/" className="text-[17px] font-bold text-chuo tracking-tight">白門ナビ</Link>
             <p className="text-[10px] text-gray-400 mt-0.5">サークル管理</p>
           </div>
-          <button onClick={handleSignOut} className="text-[11px] text-gray-400 px-3 py-1.5 rounded-full bg-gray-50">
-            ログアウト
-          </button>
+          <div className="flex items-center gap-2">
+            <Link href="/" className="text-[11px] text-gray-400 px-3 py-1.5 rounded-full bg-gray-50">
+              トップ
+            </Link>
+            <button onClick={handleSignOut} className="text-[11px] text-gray-400 px-3 py-1.5 rounded-full bg-gray-50">
+              ログアウト
+            </button>
+          </div>
         </div>
       </header>
 
