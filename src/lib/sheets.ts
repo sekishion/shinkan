@@ -208,8 +208,15 @@ export async function fetchCircles(): Promise<Circle[]> {
   const text = await res.text();
   const rows = parseCSV(text);
 
-  return rows
+  const all = rows
     .slice(1) // ヘッダー行をスキップ
     .map(rowToCircle)
     .filter((c): c is Circle => c !== null);
+
+  // 同名サークルが複数回送信した場合、最新（最後の行）を採用
+  const deduped = new Map<string, Circle>();
+  for (const circle of all) {
+    deduped.set(circle.name, circle);
+  }
+  return Array.from(deduped.values());
 }
