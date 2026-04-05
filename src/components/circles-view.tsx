@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useCircles } from "@/lib/circles-context";
 import { Circle, Category } from "@/lib/types";
-import { toISO, DAY_NAMES, ALL_TAGS, Tag, countdownLabel, detectActivity } from "@/lib/utils";
+import { toISO, DAY_NAMES, ALL_TAGS, Tag, countdownLabel, detectActivity, GENRE_GROUPS } from "@/lib/utils";
 
 type Filter = "all" | Category;
 const CAMPUSES = ["すべて", "多摩", "後楽園", "茗荷谷"] as const;
@@ -24,6 +24,40 @@ export function CirclesView({
   const [selectedTags, setSelectedTags] = useState<Set<Tag>>(new Set());
   const [showTagPicker, setShowTagPicker] = useState(false);
   const [eventFilter, setEventFilter] = useState<"" | "today" | "week">("");
+  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const [activeSubGenre, setActiveSubGenre] = useState<string | null>(null);
+
+  // 大カテゴリ選択: 同じものを再タップで解除
+  const selectGroup = (groupLabel: string) => {
+    if (activeGroup === groupLabel) {
+      setActiveGroup(null);
+      setActiveSubGenre(null);
+    } else {
+      setActiveGroup(groupLabel);
+      setActiveSubGenre(null);
+    }
+  };
+
+  // サブジャンル選択: 同じものを再タップで解除（大カテゴリ全体に戻る）
+  const selectSubGenre = (genre: string) => {
+    setActiveSubGenre(activeSubGenre === genre ? null : genre);
+  };
+
+  // 選択中の大カテゴリのサブジャンル（実際にサークルが存在するもののみ）
+  const availableSubGenres = useMemo(() => {
+    if (!activeGroup) return [];
+    const group = GENRE_GROUPS.find((g) => g.label === activeGroup);
+    if (!group) return [];
+    // 実際にサークルが存在するサブジャンルだけ表示
+    const existing = new Set<string>();
+    for (const c of circles) {
+      const activity = detectActivity(c.name, c.description);
+      if (activity && group.genres.includes(activity.label)) {
+        existing.add(activity.label);
+      }
+    }
+    return group.genres.filter((g) => existing.has(g));
+  }, [activeGroup, circles]);
 
   const toggleTag = (tag: Tag) => {
     setSelectedTags((prev) => {
@@ -68,13 +102,23 @@ export function CirclesView({
         }
       }
 
-      // テキスト検索: 名前・説明・タグにヒット
+      // ジャンル絞り込み: 大カテゴリ or サブジャンルで判定
+      if (activeGroup) {
+        const activity = detectActivity(c.name, c.description);
+        const group = GENRE_GROUPS.find((g) => g.label === activeGroup);
+        if (!group || !activity || !group.genres.includes(activity.label)) return false;
+        if (activeSubGenre && activity.label !== activeSubGenre) return false;
+      }
+
+      // テキスト検索: 名前・説明・タグ・アクティビティラベルにヒット
       if (search) {
         const q = search.toLowerCase();
+        const activity = detectActivity(c.name, c.description);
         const inName = c.name.toLowerCase().includes(q);
         const inDesc = c.description.toLowerCase().includes(q);
         const inTags = c.tags.some((t) => t.toLowerCase().includes(q));
-        if (!inName && !inDesc && !inTags) return false;
+        const inActivity = activity ? activity.label.toLowerCase().includes(q) : false;
+        if (!inName && !inDesc && !inTags && !inActivity) return false;
       }
 
       return true;
@@ -83,7 +127,7 @@ export function CirclesView({
       if (!a.featured && b.featured) return 1;
       return 0;
     });
-  }, [circles, filter, campus, search, selectedTags, eventFilter]);
+  }, [circles, filter, campus, search, selectedTags, eventFilter, activeGroup, activeSubGenre]);
 
   return (
     <div className="flex flex-col h-full">
@@ -98,15 +142,39 @@ export function CirclesView({
             className="w-full pl-10 pr-4 py-2 bg-gray-50 rounded-xl text-[13px] border border-gray-100 focus:outline-none focus:ring-2 focus:ring-chuo/15 focus:border-chuo/30" />
         </div>
 
-        {/* クイック検索 */}
-        {!search && (
-          <div className="flex gap-1.5 mb-2 overflow-x-auto no-scrollbar">
-            {["テニス", "サッカー", "バンド", "ダンス", "バスケ", "ボランティア", "旅行", "写真"].map((kw) => (
-              <button key={kw} onClick={() => setSearch(kw)}
-                className="px-2.5 py-1 text-[11px] rounded-full bg-white border border-gray-150 text-gray-500 font-medium whitespace-nowrap shrink-0 active:bg-gray-50">
-                {kw}
+        {/* ジャンルフィルタ（2段構造: 大カテゴリ → サブジャンル） */}
+        <div className="flex gap-1.5 mb-1.5 overflow-x-auto no-scrollbar">
+          {GENRE_GROUPS.map((group) => {
+            const active = activeGroup === group.label;
+            return (
+              <button key={group.label} onClick={() => selectGroup(group.label)}
+                className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] rounded-full font-semibold whitespace-nowrap shrink-0 transition-all ${
+                  active
+                    ? "bg-chuo text-white shadow-sm"
+                    : "bg-white border border-gray-150 text-gray-500 active:bg-gray-50"
+                }`}>
+                <span className="text-[13px] leading-none">{group.emoji}</span>
+                {group.label}
               </button>
-            ))}
+            );
+          })}
+        </div>
+        {/* サブジャンル（大カテゴリ選択時のみ、1行で表示） */}
+        {activeGroup && availableSubGenres.length > 1 && (
+          <div className="flex gap-1 mb-1.5 overflow-x-auto no-scrollbar">
+            {availableSubGenres.map((genre) => {
+              const active = activeSubGenre === genre;
+              return (
+                <button key={genre} onClick={() => selectSubGenre(genre)}
+                  className={`px-2 py-1 text-[10px] rounded-full font-medium whitespace-nowrap shrink-0 transition-all ${
+                    active
+                      ? "bg-chuo/15 text-chuo border border-chuo/30"
+                      : "bg-gray-50 text-gray-400 border border-gray-100"
+                  }`}>
+                  {genre}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -224,7 +292,7 @@ export function CirclesView({
             {filtered.map((circle) => {
               const isSports = circle.category === "運動系";
               const isKept = keeps.has(circle.id);
-              const activity = detectActivity(circle.name, circle.description);
+              const activity = detectActivity(circle.name, circle.description, circle.category);
 
               return (
                 <button
