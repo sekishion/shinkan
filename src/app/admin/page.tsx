@@ -45,8 +45,18 @@ export default function AdminPage() {
 
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`「${name}」を削除しますか？`)) return;
+    if (!user) return;
     setDeleting(id);
-    await supabase.from("circles").delete().eq("id", id);
+    const { error } = await supabase
+      .from("circles")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
+    if (error) {
+      alert("削除に失敗しました");
+      setDeleting(null);
+      return;
+    }
     setCircles((prev) => prev.filter((c) => c.id !== id));
     setDeleting(null);
   };

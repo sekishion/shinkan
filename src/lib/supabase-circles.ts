@@ -42,7 +42,11 @@ export async function fetchSupabaseCircles(): Promise<Circle[]> {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error || !data) return [];
+  if (error) {
+    console.error("Supabase circles SELECT error:", error.message);
+    return [];
+  }
+  if (!data) return [];
 
   // 同名サークルの最新のみ採用
   const deduped = new Map<string, DbCircle>();

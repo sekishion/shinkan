@@ -61,10 +61,12 @@ export default function EditCirclePage() {
   }, [user, authLoading, id, router]);
 
   const handleSubmit = async (data: CircleFormData): Promise<string | null> => {
+    if (!user) return "ログインが必要です";
     const { error } = await supabase
       .from("circles")
       .update(data)
-      .eq("id", Number(id));
+      .eq("id", Number(id))
+      .eq("user_id", user.id);
 
     if (error) return "更新に失敗しました。もう一度お試しください。";
     setDone(true);
