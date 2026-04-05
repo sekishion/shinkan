@@ -2,7 +2,7 @@ import { fetchCircles } from "@/lib/sheets";
 import { fetchSupabaseCircles } from "@/lib/supabase-circles";
 import { NextResponse } from "next/server";
 
-export const revalidate = 300; // 5分キャッシュ
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
