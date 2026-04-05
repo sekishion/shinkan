@@ -8,6 +8,7 @@ import { CalendarView } from "@/components/calendar-view";
 import { CirclesView } from "@/components/circles-view";
 import { KeepsView } from "@/components/keeps-view";
 import { CircleDetail } from "@/components/circle-detail";
+import Link from "next/link";
 
 type Tab = "calendar" | "search" | "keeps";
 
@@ -38,13 +39,21 @@ export default function Home() {
     <div className="h-screen flex flex-col bg-[#fafafa]">
       {/* --- header --- */}
       <header className="bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 pt-3 pb-1.5 shrink-0">
-        <button
-          onClick={() => { setSelectedCircle(null); setTab("calendar"); }}
-          className="text-left"
-        >
-          <h1 className="text-[17px] font-bold text-chuo tracking-tight">白門ナビ</h1>
-          <p className="text-[10px] text-gray-400 mt-0.5">中央大学 新歓イベントまとめ 2026</p>
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => { setSelectedCircle(null); setTab("calendar"); }}
+            className="text-left"
+          >
+            <h1 className="text-[17px] font-bold text-chuo tracking-tight">白門ナビ</h1>
+            <p className="text-[10px] text-gray-400 mt-0.5">中央大学 新歓イベントまとめ 2026</p>
+          </button>
+          <Link
+            href="/register"
+            className="text-[11px] text-chuo/70 font-medium px-3 py-1.5 rounded-full bg-chuo/5 hover:bg-chuo/10 transition-colors"
+          >
+            サークル登録
+          </Link>
+        </div>
       </header>
 
       {/* --- main --- */}
