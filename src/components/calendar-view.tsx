@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
-import { circles } from "@/lib/data";
+import { useCircles } from "@/lib/circles-context";
 import { Circle, Category, Campus } from "@/lib/types";
 import { DAY_NAMES, getWeekDates, getMonthGrid, toISO, isToday, parseTimeRange } from "@/lib/utils";
 
@@ -65,6 +65,7 @@ export function CalendarView({
   keeps: Set<string>;
   onSelectCircle: (c: Circle) => void;
 }) {
+  const { circles } = useCircles();
   const [viewMode, setViewModeRaw] = useState<ViewMode>("day");
   const [weekOffset, setWeekOffset] = useState(0);
   const [dayOffset, setDayOffset] = useState(0); // 3日表示用

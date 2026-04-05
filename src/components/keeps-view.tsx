@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { circles } from "@/lib/data";
+import { useCircles } from "@/lib/circles-context";
 import { Circle } from "@/lib/types";
 import { DAY_NAMES, toISO, countdownLabel } from "@/lib/utils";
 import { LineIcon } from "./icons";
@@ -15,6 +15,7 @@ export function KeepsView({
   onToggleKeep: (id: string) => void;
   onSelectCircle: (c: Circle) => void;
 }) {
+  const { circles } = useCircles();
   const today = toISO(new Date());
 
   const keptCircles = useMemo(() => {
@@ -30,7 +31,7 @@ export function KeepsView({
         if (!b.nextEvent) return -1;
         return a.nextEvent.date.localeCompare(b.nextEvent.date);
       });
-  }, [keeps, today]);
+  }, [circles, keeps, today]);
 
   // 今日イベントがあるキープ数
   const todayCount = keptCircles.filter(
@@ -48,7 +49,7 @@ export function KeepsView({
         return bScore - aScore;
       })
       .slice(0, 3);
-  }, [keeps.size]);
+  }, [circles, keeps.size]);
 
   return (
     <div className="flex flex-col h-full">

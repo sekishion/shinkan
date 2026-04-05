@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Circle } from "@/lib/types";
-import { circles } from "@/lib/data";
+import { useCircles } from "@/lib/circles-context";
 import { DAY_NAMES } from "@/lib/utils";
 import { StoredReview } from "@/lib/hooks";
 import { XIcon, InstagramIcon, LineIcon } from "./icons";
@@ -26,6 +26,7 @@ export function CircleDetail({
   onAddReview: (rating: number, comment: string) => void;
   onSelectCircle?: (c: Circle) => void;
 }) {
+  const { circles } = useCircles();
   const isSports = circle.category === "運動系";
   const badgeStyle = isSports ? "bg-sports-light text-sports" : "bg-culture-light text-culture";
   const featured = circle.featured;
@@ -42,7 +43,7 @@ export function CircleDetail({
       .sort((a, b) => b.score - a.score)
       .slice(0, 3)
       .map((s) => s.circle);
-  }, [circle]);
+  }, [circles, circle]);
 
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newRating, setNewRating] = useState(0);

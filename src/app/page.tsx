@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Circle } from "@/lib/types";
 import { useKeeps, useReviews } from "@/lib/hooks";
+import { CirclesProvider } from "@/lib/circles-context";
 import { CalendarView } from "@/components/calendar-view";
 import { CirclesView } from "@/components/circles-view";
 import { KeepsView } from "@/components/keeps-view";
@@ -33,6 +34,7 @@ export default function Home() {
   }, [toast]);
 
   return (
+    <CirclesProvider>
     <div className="h-screen flex flex-col bg-[#fafafa]">
       {/* --- header --- */}
       <header className="bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 pt-3 pb-1.5 shrink-0">
@@ -96,6 +98,7 @@ export default function Home() {
         </div>
       )}
     </div>
+    </CirclesProvider>
   );
 }
 

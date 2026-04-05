@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { circles } from "@/lib/data";
+import { useCircles } from "@/lib/circles-context";
 import { Circle, Category } from "@/lib/types";
 import { toISO, DAY_NAMES, ALL_TAGS, Tag, countdownLabel, detectActivity } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ export function CirclesView({
   onToggleKeep: (id: string) => void;
   onSelectCircle: (c: Circle) => void;
 }) {
+  const { circles } = useCircles();
   const [filter, setFilter] = useState<Filter>("all");
   const [campus, setCampus] = useState<string>("すべて");
   const [search, setSearch] = useState("");
@@ -39,7 +40,7 @@ export function CirclesView({
     const sports = circles.filter((c) => c.category === "運動系").length;
     const culture = circles.filter((c) => c.category === "文化系").length;
     return { all, sports, culture };
-  }, []);
+  }, [circles]);
 
   const filtered = useMemo(() => {
     const today = toISO(new Date());
@@ -82,7 +83,7 @@ export function CirclesView({
       if (!a.featured && b.featured) return 1;
       return 0;
     });
-  }, [filter, campus, search, selectedTags, eventFilter]);
+  }, [circles, filter, campus, search, selectedTags, eventFilter]);
 
   return (
     <div className="flex flex-col h-full">
