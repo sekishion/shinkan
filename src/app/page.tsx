@@ -48,10 +48,10 @@ export default function Home() {
             <p className="text-[10px] text-gray-400 mt-0.5">中央大学 新歓イベントまとめ 2026</p>
           </button>
           <Link
-            href="/register"
+            href="/admin"
             className="text-[11px] text-chuo/70 font-medium px-3 py-1.5 rounded-full bg-chuo/5 hover:bg-chuo/10 transition-colors"
           >
-            サークル登録
+            サークル管理
           </Link>
         </div>
       </header>
