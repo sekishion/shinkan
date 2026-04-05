@@ -20,6 +20,7 @@ const ATMOSPHERE_TAGS = ["初心者歓迎", "ガチ・経験者向け", "ゆる�
 export interface EventForm {
   date: string;
   time: string;
+  timeEnd: string;
   location: string;
   description: string;
 }
@@ -41,7 +42,7 @@ export interface CircleFormData {
   apply_url: string | null;
   x_url: string | null;
   instagram_url: string | null;
-  events: EventForm[];
+  events: { date: string; time: string; location: string; description: string }[];
 }
 
 export interface CircleFormProps {
@@ -50,13 +51,20 @@ export interface CircleFormProps {
   onSubmit: (data: CircleFormData) => Promise<string | null>; // returns error or null
 }
 
-const emptyEvent = (): EventForm => ({ date: "", time: "", location: "", description: "" });
+const emptyEvent = (): EventForm => ({ date: "", time: "", timeEnd: "", location: "", description: "" });
 
 /** campus値 → 選択されたキャンパス配列 */
 function campusToArray(campus?: string): string[] {
   if (!campus) return [];
   if (campus === "複数") return ["多摩", "後楽園", "茗荷谷"];
   return [campus];
+}
+
+/** DB保存形式 "14:00〜17:00" → { time: "14:00", timeEnd: "17:00" } */
+function parseTime(time?: string): { time: string; timeEnd: string } {
+  if (!time) return { time: "", timeEnd: "" };
+  const parts = time.split("〜");
+  return { time: parts[0]?.trim() || "", timeEnd: parts[1]?.trim() || "" };
 }
 
 export function CircleForm({ initial, submitLabel, onSubmit }: CircleFormProps) {
@@ -80,7 +88,12 @@ export function CircleForm({ initial, submitLabel, onSubmit }: CircleFormProps) 
   const [instagramUrl, setInstagramUrl] = useState(initial?.instagram_url || "");
 
   const [events, setEvents] = useState<EventForm[]>(
-    initial?.events?.length ? initial.events : [emptyEvent()],
+    initial?.events?.length
+      ? initial.events.map((ev) => {
+          const { time, timeEnd } = parseTime(ev.time);
+          return { ...ev, time, timeEnd };
+        })
+      : [emptyEvent()],
   );
 
   const [submitting, setSubmitting] = useState(false);
@@ -135,7 +148,14 @@ export function CircleForm({ initial, submitLabel, onSubmit }: CircleFormProps) 
       apply_url: applyUrl.trim() || null,
       x_url: xUrl.trim() || null,
       instagram_url: instagramUrl.trim() || null,
-      events: events.filter((ev) => ev.date && ev.description),
+      events: events
+        .filter((ev) => ev.date && ev.description)
+        .map((ev) => ({
+          date: ev.date,
+          time: ev.timeEnd ? `${ev.time}〜${ev.timeEnd}` : ev.time,
+          location: ev.location,
+          description: ev.description,
+        })),
     };
 
     const err = await onSubmit(data);
@@ -239,11 +259,14 @@ export function CircleForm({ initial, submitLabel, onSubmit }: CircleFormProps) 
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <input type="date" value={ev.date} onChange={(e) => updateEvent(i, "date", e.target.value)}
-                className="px-3 py-2 bg-white rounded-xl text-[13px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-chuo/20" />
+            <input type="date" value={ev.date} onChange={(e) => updateEvent(i, "date", e.target.value)}
+              className="w-full px-3 py-2 bg-white rounded-xl text-[13px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-chuo/20" />
+            <div className="flex items-center gap-2">
               <input type="time" value={ev.time} onChange={(e) => updateEvent(i, "time", e.target.value)}
-                className="px-3 py-2 bg-white rounded-xl text-[13px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-chuo/20" />
+                className="flex-1 px-3 py-2 bg-white rounded-xl text-[13px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-chuo/20" />
+              <span className="text-[13px] text-gray-400">〜</span>
+              <input type="time" value={ev.timeEnd} onChange={(e) => updateEvent(i, "timeEnd", e.target.value)}
+                className="flex-1 px-3 py-2 bg-white rounded-xl text-[13px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-chuo/20" />
             </div>
             <input placeholder="場所（例: 多摩キャンパス 体育館）" value={ev.location} onChange={(e) => updateEvent(i, "location", e.target.value)}
               className="w-full px-3 py-2 bg-white rounded-xl text-[13px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-chuo/20" />
