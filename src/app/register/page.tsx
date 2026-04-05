@@ -4,12 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
-const FACULTIES_CAMPUSES = [
-  { label: "多摩", value: "多摩" },
-  { label: "後楽園", value: "後楽園" },
-  { label: "茗荷谷", value: "茗荷谷" },
-  { label: "複数キャンパス", value: "複数" },
-] as const;
+const CAMPUSES = ["多摩", "後楽園", "茗荷谷"] as const;
 
 const CATEGORIES = [
   { label: "運動系", value: "運動系" },
@@ -38,7 +33,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [type, setType] = useState("サークル");
   const [category, setCategory] = useState("運動系");
-  const [campus, setCampus] = useState("多摩");
+  const [selectedCampuses, setSelectedCampuses] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [activitySchedule, setActivitySchedule] = useState("");
 
@@ -70,6 +65,12 @@ export default function RegisterPage() {
     );
   };
 
+  const toggleCampus = (c: string) => {
+    setSelectedCampuses((prev) =>
+      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
+    );
+  };
+
   const updateEvent = (index: number, field: keyof EventForm, value: string) => {
     setEvents((prev) => prev.map((ev, i) => (i === index ? { ...ev, [field]: value } : ev)));
   };
@@ -83,8 +84,8 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !description.trim() || !activitySchedule.trim()) {
-      setError("団体名・紹介文・活動日時は必須です");
+    if (!name.trim() || !description.trim() || !activitySchedule.trim() || selectedCampuses.length === 0) {
+      setError("団体名・紹介文・活動日時・キャンパスは必須です");
       return;
     }
     setError("");
@@ -96,7 +97,7 @@ export default function RegisterPage() {
       name: name.trim(),
       type,
       category,
-      campus,
+      campus: selectedCampuses.length > 1 ? "複数" : selectedCampuses[0],
       description: description.trim(),
       activity_schedule: activitySchedule.trim(),
       fee: fee.trim() || null,
@@ -170,10 +171,32 @@ export default function RegisterPage() {
         <Section title="基本情報" required>
           <Input label="団体名" value={name} onChange={setName} placeholder="例: テニスサークル○○" required />
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <SelectField label="団体区分" value={type} onChange={setType} options={TYPES} />
             <SelectField label="カテゴリ" value={category} onChange={setCategory} options={CATEGORIES} />
-            <SelectField label="キャンパス" value={campus} onChange={setCampus} options={FACULTIES_CAMPUSES} />
+          </div>
+
+          <div>
+            <label className="text-[11px] text-gray-400 font-medium mb-1.5 block">
+              キャンパス<span className="text-red-400 ml-0.5">*</span>
+              <span className="text-gray-300 ml-1">複数選択可</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {CAMPUSES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => toggleCampus(c)}
+                  className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-colors ${
+                    selectedCampuses.includes(c)
+                      ? "bg-chuo text-white"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
           </div>
 
           <TextArea
