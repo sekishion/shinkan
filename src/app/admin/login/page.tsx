@@ -16,14 +16,13 @@ function translateAuthError(msg: string): string {
 }
 
 export default function LoginPage() {
-  const { signIn, signUp } = useAuth();
+  const { signIn } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [signUpDone, setSignUpDone] = useState(false);
 
   const handleSubmit = async () => {
     if (!email || !password) {
@@ -39,13 +38,28 @@ export default function LoginPage() {
     setLoading(true);
 
     if (isSignUp) {
-      const err = await signUp(email, password);
+      // サーバーサイドAPIでアカウント作成（メール確認不要）
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, action: "signup" }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setLoading(false);
+        setError(data.error || "アカウント作成に失敗しました");
+        return;
+      }
+
+      // 作成成功 → そのままログイン
+      const err = await signIn(email, password);
       setLoading(false);
       if (err) {
         setError(translateAuthError(err.message));
         return;
       }
-      setSignUpDone(true);
+      router.push("/admin");
     } else {
       const err = await signIn(email, password);
       setLoading(false);
@@ -56,32 +70,6 @@ export default function LoginPage() {
       router.push("/admin");
     }
   };
-
-  if (signUpDone) {
-    return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-6">
-        <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-sm">
-          <div className="text-4xl mb-4">📧</div>
-          <h2 className="text-lg font-bold text-gray-800 mb-2">確認メールを送信しました</h2>
-          <p className="text-[13px] text-gray-500 leading-relaxed">
-            <span className="font-semibold text-gray-700">{email}</span> に確認メールを送りました。
-            メール内のリンクをクリックしてから、ログインしてください。
-          </p>
-          <button
-            onClick={() => { setIsSignUp(false); setSignUpDone(false); }}
-            className="mt-6 px-6 py-2.5 bg-chuo text-white font-bold rounded-2xl text-[14px]"
-          >
-            ログイン画面へ
-          </button>
-          <div className="mt-4">
-            <Link href="/" className="text-[12px] text-gray-400 hover:text-chuo transition-colors">
-              ← 白門ナビに戻る
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-6">
