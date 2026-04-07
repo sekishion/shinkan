@@ -2,6 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
+// プリレンダHTMLがCDNに長時間キャッシュされ、calendar-view の useState 初期値
+// (new Date().getDay() 等) がビルド時の日付で固定される問題を回避するため、
+// ルート全体を動的レンダリング（SSR）に切り替える。
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "白門ナビ | 中央大学 新歓イベントまとめ 2026",
   description: "中央大学の新歓イベント・サークル情報を一覧でチェック。カレンダーで予定を確認、気になるサークルをキープしよう。",
